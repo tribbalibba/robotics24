@@ -1,0 +1,42 @@
+class MyTestClass {
+public:
+  int myA;
+  boolean myB;
+
+  // Constructor to initialize values
+  MyTestClass() : myA(0), myB(false) {}
+
+  // Method to perform a specific action
+  void performAction() {
+    myA += 1;
+    myB = !myB;
+    Serial.println("Action performed: myA = " + String(myA) + ", myB = " + String(myB));
+  }
+};
+
+// Function to operate on the class object
+void operateOnClass(MyTestClass *myObject) {
+  myObject->performAction();
+}
+
+// Global Variables define multiple objects of the class
+MyTestClass object1;
+MyTestClass object2;
+
+void setup() {
+  Serial.begin(115200);
+}
+
+void loop() {
+  Serial.println("Operating on object1:");
+  operateOnClass(&object1);
+  Serial.println("---------------------------");
+
+  delay(2000);
+
+  Serial.println("Operating on object2:");
+  operateOnClass(&object2);
+  Serial.println("---------------------------");
+
+  delay(2000);
+}
