@@ -1,0 +1,53 @@
+#include <Arduino.h>
+#include <Pixy2.h> // Pixy library
+#include <Adafruit_SSD1327.h> // OLED library
+#include <Adafruit_GFX.h>    // Core graphics library
+Pixy2 pixy; // Create Pixy object
+Adafruit_SSD1327 display(128, 128, &SPI, OLED_DC, OLED_RESET, OLED_CS); // Create OLED object
+
+#define OLED_CS    9
+#define OLED_RESET 8  // Or whatever pin you're using for reset
+#define OLED_DC    7
+
+Adafruit_SSD1351 display = Adafruit_SSD1351(OLED_CS, OLED_DC, OLED_RESET);
+
+// Function to draw border on OLED display
+void drawBorder(int x, int y, int width, int height) {
+  display.drawRect(x, y, width, height, SSD1327_WHITE);
+}
+
+void setup() {
+  Serial.begin(115200);
+  pixy.init(); // Initialize Pixy
+  display.begin(0x3D); // Initialize OLED
+
+  // Additional OLED setup
+  display.setTextSize(1);
+  display.setTextColor(SSD1327_WHITE);
+  display.setRotation(0);
+}
+
+void loop() {
+  // Read Pixy data
+  pixy.ccc.getBlocks();
+
+  // If Pixy detects any blocks, draw border on OLED
+  if (pixy.ccc.numBlocks) {
+    // Assume only one block is detected
+    int x = pixy.ccc.blocks[0].m_x;
+    int y = pixy.ccc.blocks[0].m_y;
+    int width = pixy.ccc.blocks[0].m_width;
+    int height = pixy.ccc.blocks[0].m_height;
+
+    // Map Pixy coordinates to OLED display
+    int oledX = map(x, 0, 320, 0, 127);
+    int oledY = map(y, 0, 320, 0, 127);
+    int oledWidth = map(width, 0, 320, 0, 127);
+    int oledHeight = map(height, 0, 320, 0, 127);
+
+    // Draw border on OLED
+    drawBorder(oledX, oledY, oledWidth, oledHeight);
+  }
+
+  delay(100); // Adjust delay as needed
+}
