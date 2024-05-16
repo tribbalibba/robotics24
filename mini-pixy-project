@@ -1,0 +1,77 @@
+#include <Arduino.h> // Only needed by https://platformio.org/
+
+int wow = 2;   // just seems to need an integer
+
+#include "Pixy2.h"
+#include "TPixy2.h"
+
+Pixy2 pixy;  // Create our Pixy object
+
+// Motor control pins
+const int motorPWMPin = D5;
+const int motorDirPin = D4;
+
+// Motor speed
+const int motorSpeed = 255; // Max speed for PWM (0-255)
+
+// Setup - Runs Once @ Startup
+void setup() {
+  Serial.begin(115200);
+  pixy.init();  // Initialize the Pixy object
+
+  // Set motor control pins as outputs
+  pinMode(motorPWMPin, OUTPUT);
+  pinMode(motorDirPin, OUTPUT);
+
+  // Initialize motor to stopped
+  stopMotor();
+}
+
+// Function to stop the motor
+void stopMotor() {
+  analogWrite(motorPWMPin, 0);
+}
+
+// Function to spin the motor in one direction
+void spinMotorLeft() {
+  digitalWrite(motorDirPin, LOW);
+  analogWrite(motorPWMPin, motorSpeed);
+}
+
+// Function to spin the motor in the opposite direction
+void spinMotorRight() {
+  digitalWrite(motorDirPin, HIGH);
+  analogWrite(motorPWMPin, motorSpeed);
+}
+
+// Loop - Runs over and over
+void loop() {
+  pixy.ccc.getBlocks();  // Do the Pixy stuff. Grab the numbers of blocks the Pixy finds
+
+  // If we have some blocks, process the first block
+  if (pixy.ccc.numBlocks) {
+    int myPixyInt = pixy.ccc.blocks[0].m_x;  // x location of the main object 0 - 320
+
+    if (myPixyInt <= 10) {  // Object really far left
+      Serial.println("Pixy Object far left");
+      spinMotorLeft();  // Spin motor left
+    } else if (myPixyInt > 10 && myPixyInt <= 100) {  // Object on the far left
+      Serial.println("Pixy Object on left");
+      spinMotorLeft();  // Spin motor left
+    } else if (myPixyInt > 100 && myPixyInt <= 200) {  // Object near middle, stop motor
+      Serial.println("Pixy Object in the middle");
+      stopMotor();  // Stop motor
+    } else if (myPixyInt > 200 && myPixyInt <= 300) {  // Object on right
+      Serial.println("Pixy Object on right");
+      spinMotorRight();  // Spin motor right
+    } else if (myPixyInt > 300) {  // Object on far right
+      Serial.println("Pixy Object far right");
+      spinMotorRight();  // Spin motor right
+    }
+  } else {  // No blocks seen by camera
+    Serial.println("Pixy No Object");
+    stopMotor();  // Stop motor
+  }
+
+  delay(1000);  // Slow things down a bit
+}
